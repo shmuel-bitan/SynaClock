@@ -1,0 +1,9 @@
+{
+  "synagogue_name": "SynaClock",
+  "city": "Paris",
+  "latitude": 48.8566,
+  "longitude": 2.3522,
+  "timezone": "Europe/Paris",
+  "israel": false,
+  "candle_lighting_minutes": 18
+}

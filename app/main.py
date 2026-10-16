@@ -9,21 +9,14 @@ import os
 import re
 import secrets
 
-<<<<<<< HEAD
-from fastapi import FastAPI, HTTPException, Request
-=======
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File
->>>>>>> 91b0023 (V3)
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-<<<<<<< HEAD
-=======
 import cloudinary
 import cloudinary.uploader
 
->>>>>>> 91b0023 (V3)
 from .config import load_config
 from .firestore_store import (
     init_store, create, get, list_all, update, delete,
@@ -559,8 +552,6 @@ def save_shabbat_program(body: ShabbatProgramIn, request: Request):
     payload = {"friday": _clean_poster_rows(body.friday), "saturday": _clean_poster_rows(body.saturday)}
     put_shabbat(friday.isoformat(), saturday.isoformat(), payload)
     return {"ok": True, "friday": friday.isoformat(), "saturday": saturday.isoformat()}
-<<<<<<< HEAD
-=======
 
 
 # Media library: files hosted by Cloudinary, metadata persisted in Firestore.
@@ -659,4 +650,3 @@ def media_delete(media_id: str, request: Request):
         raise HTTPException(502, "Impossible de supprimer l'image chez Cloudinary") from exc
     delete("media_images", media_id)
     return {"ok": True}
->>>>>>> 91b0023 (V3)

@@ -4,8 +4,5 @@ httpx==0.28.1
 pydantic==2.13.4
 tzdata>=2025.2
 firebase-admin==7.7.0
-<<<<<<< HEAD
-=======
 cloudinary>=1.44,<2
 python-multipart>=0.0.20
->>>>>>> 91b0023 (V3)

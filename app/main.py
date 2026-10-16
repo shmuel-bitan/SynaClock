@@ -9,11 +9,21 @@ import os
 import re
 import secrets
 
+<<<<<<< HEAD
 from fastapi import FastAPI, HTTPException, Request
+=======
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File
+>>>>>>> 91b0023 (V3)
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+<<<<<<< HEAD
+=======
+import cloudinary
+import cloudinary.uploader
+
+>>>>>>> 91b0023 (V3)
 from .config import load_config
 from .firestore_store import (
     init_store, create, get, list_all, update, delete,
@@ -549,3 +559,104 @@ def save_shabbat_program(body: ShabbatProgramIn, request: Request):
     payload = {"friday": _clean_poster_rows(body.friday), "saturday": _clean_poster_rows(body.saturday)}
     put_shabbat(friday.isoformat(), saturday.isoformat(), payload)
     return {"ok": True, "friday": friday.isoformat(), "saturday": saturday.isoformat()}
+<<<<<<< HEAD
+=======
+
+
+# Media library: files hosted by Cloudinary, metadata persisted in Firestore.
+def _media_origin(request: Request):
+    origin = request.headers.get("origin")
+    if origin and origin.rstrip("/") != str(request.base_url).rstrip("/"):
+        raise HTTPException(403, "Origine non autorisée")
+
+
+def _cloudinary_config():
+    keys = [os.getenv(k) for k in ("CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET")]
+    if not all(keys):
+        raise HTTPException(503, "Configurez Cloudinary dans les variables Vercel")
+    cloudinary.config(cloud_name=keys[0], api_key=keys[1], api_secret=keys[2], secure=True)
+
+
+def _media_public():
+    result = [x for x in list_all("media_images") if x.get("active", True)]
+    return sorted(result, key=lambda x: (int(x.get("sort_order", 0)), str(x.get("id"))))
+
+
+@app.get("/api/media/slides")
+def media_slides():
+    return _media_public()
+
+
+@app.get("/api/admin/media")
+def media_admin(request: Request):
+    auth(request)
+    return sorted(list_all("media_images"), key=lambda x: (int(x.get("sort_order", 0)), str(x.get("id"))))
+
+
+@app.post("/api/admin/media")
+def media_upload(request: Request, file: UploadFile = File(...)):
+    auth(request)
+    _media_origin(request)
+    if file.content_type not in {"image/jpeg", "image/png", "image/webp"}:
+        raise HTTPException(422, "Formats autorisés : JPG, PNG, WEBP")
+    payload = file.file.read(5 * 1024 * 1024 + 1)
+    if len(payload) > 5 * 1024 * 1024:
+        raise HTTPException(413, "Taille maximale : 5 Mo")
+    # Check actual file signatures; don't trust the browser-supplied MIME type.
+    valid = (payload.startswith(b"\xff\xd8\xff") or
+             payload.startswith(b"\x89PNG\r\n\x1a\n") or
+             (payload.startswith(b"RIFF") and payload[8:12] == b"WEBP"))
+    if not valid:
+        raise HTTPException(422, "Fichier image invalide")
+    _cloudinary_config()
+    try:
+        result = cloudinary.uploader.upload(payload, folder="synaclock/slides", resource_type="image")
+    except Exception as exc:
+        raise HTTPException(502, "Échec de l'envoi vers Cloudinary") from exc
+    row = {"title": (Path(file.filename or "image").stem[:100]),
+           "image_url": result["secure_url"], "public_id": result["public_id"],
+           "duration": 12, "sort_order": 0, "active": True,
+           "created_at": datetime.now(timezone.utc).isoformat()}
+    try:
+        id_ = create("media_images", row)
+    except Exception:
+        cloudinary.uploader.destroy(result["public_id"], resource_type="image")
+        raise
+    return {**row, "id": id_}
+
+
+class MediaEdit(BaseModel):
+    title: str
+    duration: int = 12
+    sort_order: int = 0
+    active: bool = True
+
+
+@app.put("/api/admin/media/{media_id}")
+def media_update(media_id: str, body: MediaEdit, request: Request):
+    auth(request)
+    _media_origin(request)
+    if not 5 <= body.duration <= 120 or len(body.title) > 100 or not body.title.strip():
+        raise HTTPException(422, "Titre ou durée invalide (5–120 secondes)")
+    if not update("media_images", media_id, body.model_dump()):
+        raise HTTPException(404, "Image introuvable")
+    return {"ok": True}
+
+
+@app.delete("/api/admin/media/{media_id}")
+def media_delete(media_id: str, request: Request):
+    auth(request)
+    _media_origin(request)
+    item = get("media_images", media_id)
+    if not item:
+        raise HTTPException(404, "Image introuvable")
+    _cloudinary_config()
+    try:
+        result = cloudinary.uploader.destroy(item["public_id"], resource_type="image", invalidate=True)
+        if result.get("result") not in ("ok", "not found"):
+            raise ValueError("suppression non confirmée")
+    except Exception as exc:
+        raise HTTPException(502, "Impossible de supprimer l'image chez Cloudinary") from exc
+    delete("media_images", media_id)
+    return {"ok": True}
+>>>>>>> 91b0023 (V3)

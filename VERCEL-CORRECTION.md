@@ -1,21 +1,10 @@
-# Correctif Vercel — CFJT V4.3
+# Déploiement Vercel — V4.4 (correctif 404)
 
-## Origine de l'erreur
-La V4.2 réécrivait toutes les URLs vers `/api`, si bien que FastAPI recevait
-`/api` au lieu de `/`, `/admin` ou `/api/dashboard`, et renvoyait `{"detail":"Not Found"}`.
+1. Déployer **le contenu** de ce dossier à la racine du dépôt GitHub (pas le dossier parent).
+2. Dans Vercel > Project > Settings > Build and Deployment, vérifier Root Directory = `./` ou vide et Framework Preset = Other (détection Python).
+3. Vérifier que la branche Production de Vercel correspond à la branche poussée sur GitHub.
+4. Après redeploy, ouvrir `/`, `/admin`, et `/api/health`.
+5. Si 404 Vercel persiste, consulter Deployments > dernier déploiement > Build Logs et vérifier qu'une Python Function `api/index.py` apparaît ; sinon c'est un mauvais dossier ou une mauvaise branche.
+6. Si FUNCTION_INVOCATION_FAILED / 500, consulter Runtime Logs (imports, variables d'environnement, initialisation Firestore).
 
-## Correctif
-La règle `vercel.json` transmet maintenant le chemin public d'origine à
-`api/index.py`, qui le restaure avant de transmettre la requête à FastAPI.
-
-## Déploiement
-Remplacer le contenu du dépôt GitHub par celui de ce ZIP **à la racine** (les
-fichiers `vercel.json`, `requirements.txt`, les répertoires `app/`, `api/` doivent
-être à la racine). Ne pas inclure de dossier parent supplémentaire.
-Pousser les modifications sur la branche reliée à Vercel.
-Dans Vercel > Project > Settings > Build and Deployment : Root Directory doit
-pointer sur le dossier contenant `vercel.json` (en général `./`). Vérifier
-également les variables d'environnement Firebase et Cloudinary.
-Tester / puis /admin, /api/health et /static/index.html.
-
-Si le problème persiste, transmettre l'URL Vercel et les journaux du déploiement.
+Correction : la destination rewrite doit être `/api/index` (sans `.py`). Le chemin public reste transmis via le paramètre interne à la fonction ASGI.

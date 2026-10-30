@@ -19,7 +19,16 @@
 .nextday .prayer{font-size:clamp(13px,1vw,19px);padding:.2vh 0}
 @media(max-width:850px){.shell{height:auto;min-height:100vh}.week-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.week-day{padding:10px}.week-event{font-size:13px}}
 @media(min-width:851px) and (max-height:650px){.week-panel{display:none}.clock{font-size:66px}}
-</style></head><body><div class="shell"><div class="top"><div><div class="brand" id="brand">SynaClock</div><div class="clock" id="clock">--:--</div></div><div class="dates"><div class="hebrew" id="hdate">טוען…</div><div class="civil" id="cdate"></div><div class="event" id="event"></div></div></div><div class="grid"><section class="panel"><div class="label">Programme du jour</div><div id="prayers"></div><div class="nextday"><div class="label">Demain</div><div id="tomorrowPrayers"></div></div></section><section class="panel"><div class="next"><div class="label">Prochain événement</div><div class="next-name" id="nextName">—</div><div class="next-time" id="nextTime"></div><div class="countdown" id="countdown"></div></div></section></div><section class="panel week-panel"><div class="label">Programme de la semaine</div><div class="week-grid" id="weekGrid"></div></section><div class="bottom"><section class="panel"><div class="label">Halakha du jour</div><div class="copy halakha-copy" id="halakha">Aucune halakha programmée.</div><div class="source" id="source"></div></section><section class="panel"><div class="label">Informations</div><div class="copy" id="announcement">Bienvenue.</div></section></div><div class="zmanbar" id="zmanbar"></div></div><video id="keepAwakeVideo" muted loop autoplay playsinline preload="auto" aria-hidden="true" style="position:fixed;right:3px;top:3px;width:96px;height:54px;opacity:.12;z-index:20;pointer-events:none" src="/static/keep-awake.mp4"></video><div class="status" id="status"></div><div class="slide" id="slide"><div id="slideBody"></div></div><div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div><script>
+
+/* CFJT : mode TV permanent, diagnostic initial visible */
+.tv-controls{position:fixed;top:12px;right:12px;z-index:1000;display:flex;gap:8px;align-items:center;font:13px system-ui,Arial,sans-serif}
+.tv-btn{background:#137eb2;color:white;border:1px solid #08648e;border-radius:10px;padding:9px 12px;cursor:pointer;font:inherit;box-shadow:0 2px 8px #143a5840}
+.tv-btn:focus-visible{outline:3px solid #f0c65a;outline-offset:2px}
+.tv-indicator{background:#fff;color:#153a58;border:1px solid #8fbfd4;padding:8px 10px;border-radius:10px;max-width:310px;box-shadow:0 2px 8px #143a5825}
+.tv-indicator[data-kind="ok"]{border-color:#2d9667}.tv-indicator[data-kind="warn"]{border-color:#e8a033}
+.tv-controls.tv-running{opacity:.5;transition:opacity .2s}.tv-controls.tv-running:hover,.tv-controls.tv-running:focus-within{opacity:1}
+@media(max-width:650px){.tv-controls{top:5px;right:5px;gap:4px}.tv-btn,.tv-indicator{padding:6px;font-size:11px}}
+</style></head><body><div class="shell"><div class="top"><div><div class="brand" id="brand">SynaClock</div><div class="clock" id="clock">--:--</div></div><div class="dates"><div class="hebrew" id="hdate">טוען…</div><div class="civil" id="cdate"></div><div class="event" id="event"></div></div></div><div class="grid"><section class="panel"><div class="label">Programme du jour</div><div id="prayers"></div><div class="nextday"><div class="label">Demain</div><div id="tomorrowPrayers"></div></div></section><section class="panel"><div class="next"><div class="label">Prochain événement</div><div class="next-name" id="nextName">—</div><div class="next-time" id="nextTime"></div><div class="countdown" id="countdown"></div></div></section></div><section class="panel week-panel"><div class="label">Programme de la semaine</div><div class="week-grid" id="weekGrid"></div></section><div class="bottom"><section class="panel"><div class="label">Halakha du jour</div><div class="copy halakha-copy" id="halakha">Aucune halakha programmée.</div><div class="source" id="source"></div></section><section class="panel"><div class="label">Informations</div><div class="copy" id="announcement">Bienvenue.</div></section></div><div class="zmanbar" id="zmanbar"></div></div><video id="keepAwakeVideo" muted loop autoplay playsinline preload="auto" aria-hidden="true" style="position:fixed;right:3px;top:3px;width:96px;height:54px;opacity:.12;z-index:20;pointer-events:none" src="/static/keep-awake.mp4"></video><div class="status" id="status"></div><div class="slide" id="slide"><div id="slideBody"></div></div><div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div><div class="tv-controls" id="tvControls"><button type="button" class="tv-btn" id="tvModeButton" aria-pressed="false">⛶ Activer mode TV</button><span class="tv-indicator" id="tvIndicator" data-kind="warn" role="status" aria-live="polite">Veille : non testée</span></div><script>
 let off=0,data=null,rot=[],ri=0,timer=null,progressRaf=null,mediaRows=[];const $=s=>document.querySelector(s);function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function now(){return new Date(Date.now()+off)}function tick(){let n=now();$('#clock').textContent=n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});if(data?.next_prayer){let[h,m]=data.next_prayer.time.split(':').map(Number),t=new Date(n);t.setHours(h,m,0,0);let d=Math.max(0,t-n),mm=Math.floor(d/60000);$('#countdown').textContent=d?(mm>=60?`dans ${Math.floor(mm/60)}h${String(mm%60).padStart(2,'0')}`:`dans ${mm} min`):''}}setInterval(tick,1000);
 function startProgress(seconds){cancelAnimationFrame(progressRaf);const bar=$('#progressFill');if(!seconds||seconds<=0){bar.style.transition='none';bar.style.width='0%';return}const started=performance.now(),duration=seconds*1000;function step(t){const p=Math.min(1,(t-started)/duration);bar.style.transition='none';bar.style.width=(p*100)+'%';if(p<1)progressRaf=requestAnimationFrame(step)}progressRaf=requestAnimationFrame(step)}
 function scheduleMain(){clearTimeout(timer);$('#slide').classList.remove('on');if(!rot.length){startProgress(0);return}const seconds=data?.main_slide_seconds||30;startProgress(seconds);timer=setTimeout(showNextSlide,seconds*1000)}
@@ -29,5 +38,70 @@ const tomorrow=week[1];$('#tomorrowPrayers').innerHTML=tomorrow?.events?.length?
 $('#weekGrid').innerHTML=week.map((d,i)=>`<div class="week-day ${i===0?'today':''}"><div class="week-date">${dayNames[new Date(d.date+'T12:00:00').getDay()]} ${esc(d.date.slice(8,10))}/${esc(d.date.slice(5,7))}</div>${d.unavailable?'<div class="week-empty">Données indisponibles</div>':d.events.length?d.events.slice(0,4).map(e=>`<div class="week-event"><b>${esc(e.time)}</b> ${esc(e.name)}</div>`).join(''):'<div class="week-empty">Aucun événement</div>'}</div>`).join('');
 $('#nextName').textContent=data.next_prayer?.name||'—';$('#nextTime').textContent=data.next_prayer?.time||'';$('#halakha').textContent=data.halakha?.content||'Aucune halakha programmée.';$('#source').textContent=data.halakha?.source?'Source : '+data.halakha.source:'';let cards=data.announcements.filter(a=>a.display_mode==='card');$('#announcement').innerHTML=cards.length?cards.slice(0,2).map(a=>`<strong>${esc(a.title)}</strong><br>${esc(a.content)}`).join('<br><br>'):'Aucune annonce pour le moment.';$('#zmanbar').innerHTML=data.zmanim_strip.map(z=>`<div class="z"><span>${esc(z.label)}</span><b>${z.time}</b></div>`).join('');$('#status').textContent=data.stale?'Données en cache':'';let nr=[...data.announcements.filter(a=>a.display_mode!=='card'),...mediaRows];if(JSON.stringify(nr.map(x=>[x.id,x.duration,x.image_url,x.title,x.content]))!==JSON.stringify(rot.map(x=>[x.id,x.duration,x.image_url,x.title,x.content]))){rot=nr;ri=0;scheduleMain()}tick()}catch{$('#status').textContent='Mode local — serveur en attente'}}async function refreshMedia(){try{const r=await fetch('/api/media/slides',{cache:'no-store'});if(r.ok){mediaRows=await r.json();await refresh()}}catch{}}
 const keepVideo=$('#keepAwakeVideo');function tryKeepAwake(){if(keepVideo.paused)keepVideo.play().catch(()=>{});}keepVideo.addEventListener('pause',()=>setTimeout(tryKeepAwake,1500));document.addEventListener('click',tryKeepAwake,{once:true});tryKeepAwake();setInterval(tryKeepAwake,30000);
+
+// CFJT Mode TV : activation manuelle, sans simuler de fausse activité utilisateur.
+// L'acceptation du Wake Lock par le navigateur ne garantit PAS la désactivation
+// de l'économiseur Fire TV : vérifier pendant au moins 20 minutes.
+let tvModeEnabled=false, tvWakeLock=null, tvWakeError='';
+const tvButton=document.getElementById('tvModeButton');
+const tvIndicator=document.getElementById('tvIndicator');
+function tvSetIndicator(message,kind='warn'){
+  tvIndicator.textContent=message;tvIndicator.dataset.kind=kind;
+}
+function tvRefreshButton(){
+  tvButton.textContent=tvModeEnabled?'⛶ Quitter mode TV':'⛶ Activer mode TV';
+  tvButton.setAttribute('aria-pressed',String(tvModeEnabled));
+  document.getElementById('tvControls').classList.toggle('tv-running',tvModeEnabled);
+}
+async function tvRequestWakeLock(){
+  if(!tvModeEnabled)return;
+  if(!('wakeLock' in navigator)||typeof navigator.wakeLock.request!=='function'){
+    tvSetIndicator('Anti-veille non compatible avec ce navigateur','warn');return;
+  }
+  if(document.visibilityState!=='visible'){
+    tvSetIndicator('Anti-veille suspendue : onglet masqué','warn');return;
+  }
+  if(tvWakeLock&&!tvWakeLock.released){tvSetIndicator('Verrouillage demandé ✓ (test Fire TV requis)','ok');return;}
+  try{
+    const lock=await navigator.wakeLock.request('screen');
+    if(!tvModeEnabled){await lock.release();return;}
+    tvWakeLock=lock;tvWakeError='';
+    tvSetIndicator('Verrouillage demandé ✓ (test Fire TV requis)','ok');
+    lock.addEventListener('release',()=>{
+      if(tvWakeLock===lock)tvWakeLock=null;
+      if(tvModeEnabled)tvSetIndicator('Verrouillage libéré : tentative à la reprise','warn');
+    });
+  }catch(e){
+    tvWakeError=e?.name||'Erreur';
+    tvSetIndicator('Anti-veille refusée : '+tvWakeError,'warn');
+  }
+}
+async function tvEnable(){
+  tvModeEnabled=true;tvRefreshButton();
+  // Must run from a real click: no fullscreen request on page load.
+  if(document.documentElement.requestFullscreen){
+    try{await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){
+      tvSetIndicator('Plein écran indisponible ; vérification anti-veille…','warn');
+    }
+  }else{tvSetIndicator('Plein écran non compatible ; vérification anti-veille…','warn');}
+  await tvRequestWakeLock();
+}
+async function tvDisable(){
+  tvModeEnabled=false;tvRefreshButton();
+  if(tvWakeLock){try{await tvWakeLock.release();}catch(_){}tvWakeLock=null;}
+  tvSetIndicator('Mode TV désactivé','warn');
+  if(document.fullscreenElement&&document.exitFullscreen){try{await document.exitFullscreen();}catch(_){}}
+}
+tvButton.addEventListener('click',()=>{if(tvModeEnabled)tvDisable();else tvEnable();});
+document.addEventListener('visibilitychange',()=>{
+  if(tvModeEnabled&&document.visibilityState==='visible')tvRequestWakeLock();
+});
+document.addEventListener('fullscreenchange',()=>{
+  if(tvModeEnabled&&!document.fullscreenElement){
+    // The fullscreen state may be revoked externally; keep the wake lock attempt.
+    tvSetIndicator(tvWakeLock?'Plein écran quitté ; verrouillage demandé':'Plein écran quitté ; anti-veille à vérifier','warn');
+  }
+});
+
 refresh();refreshMedia();setInterval(refresh,10000);setInterval(refreshMedia,60000);
 </script></body></html>

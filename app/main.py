@@ -26,7 +26,7 @@ from .hebcal import zmanim, calendar, hebrew_date
 from .halakha import select_for_day
 
 ROOT = Path(__file__).resolve().parent
-app = FastAPI(title="SynaClock API", version="4.1.0")
+app = FastAPI(title="SynaClock API", version="4.2.0")
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
 
 
@@ -273,6 +273,18 @@ def dashboard():
     except Exception:
         cal = {"items": []}; cs = True
     ps = resolve_events(n.date(), z)
+    # Weekly overview starts today: the Friday display includes Shabbat morning.
+    week_program = []
+    for offset in range(7):
+        current_day = n.date() + timedelta(days=offset)
+        try:
+            events = ps if offset == 0 else resolve_events(current_day)
+            week_program.append({"date": current_day.isoformat(), "weekday": current_day.weekday(),
+                                 "events": [{"name": e.get("name", ""), "time": e.get("time", ""),
+                                             "note": e.get("note", ""), "event_type": e.get("event_type", "")}
+                                            for e in events]})
+        except Exception:
+            week_program.append({"date": current_day.isoformat(), "weekday": current_day.weekday(), "events": [], "unavailable": True})
     future = [p for p in ps if p.get("time") and p["time"] > n.strftime("%H:%M")]
     anns = active_announcements()
     items = cal.get("items", []) if isinstance(cal, dict) else []
@@ -293,7 +305,7 @@ def dashboard():
     return {
         "server_time": n.isoformat(), "config": safe_cfg(), "hebrew_date": hd, "zmanim": z,
         "zmanim_strip": zstrip, "calendar_event": event, "prayers": ps,
-        "next_prayer": future[0] if future else None, "announcements": anns,
+        "next_prayer": future[0] if future else None, "week_program": week_program, "announcements": anns,
         "halakha": h, "stale": hs or zs or cs,
         "main_slide_seconds": int(setting("main_slide_seconds", "30")),
     }

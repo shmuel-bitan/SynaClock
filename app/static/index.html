@@ -28,7 +28,14 @@
 .tv-indicator[data-kind="ok"]{border-color:#2d9667}.tv-indicator[data-kind="warn"]{border-color:#e8a033}
 .tv-controls.tv-running{opacity:.5;transition:opacity .2s}.tv-controls.tv-running:hover,.tv-controls.tv-running:focus-within{opacity:1}
 @media(max-width:650px){.tv-controls{top:5px;right:5px;gap:4px}.tv-btn,.tv-indicator{padding:6px;font-size:11px}}
-</style></head><body><div class="shell"><div class="top"><div><div class="brand" id="brand">SynaClock</div><div class="clock" id="clock">--:--</div></div><div class="dates"><div class="hebrew" id="hdate">טוען…</div><div class="civil" id="cdate"></div><div class="event" id="event"></div></div></div><div class="grid"><section class="panel"><div class="label">Programme du jour</div><div id="prayers"></div><div class="nextday"><div class="label">Demain</div><div id="tomorrowPrayers"></div></div></section><section class="panel"><div class="next"><div class="label">Prochain événement</div><div class="next-name" id="nextName">—</div><div class="next-time" id="nextTime"></div><div class="countdown" id="countdown"></div></div></section></div><section class="panel week-panel"><div class="label">Programme de la semaine</div><div class="week-grid" id="weekGrid"></div></section><div class="bottom"><section class="panel"><div class="label">Halakha du jour</div><div class="copy halakha-copy" id="halakha">Aucune halakha programmée.</div><div class="source" id="source"></div></section><section class="panel"><div class="label">Informations</div><div class="copy" id="announcement">Bienvenue.</div></section></div><div class="zmanbar" id="zmanbar"></div></div><video id="keepAwakeVideo" muted loop autoplay playsinline preload="auto" aria-hidden="true" style="position:fixed;right:3px;top:3px;width:96px;height:54px;opacity:.12;z-index:20;pointer-events:none" src="/static/keep-awake.mp4"></video><div class="status" id="status"></div><div class="slide" id="slide"><div id="slideBody"></div></div><div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div><div class="tv-controls" id="tvControls"><button type="button" class="tv-btn" id="tvModeButton" aria-pressed="false">⛶ Activer mode TV</button><span class="tv-indicator" id="tvIndicator" data-kind="warn" role="status" aria-live="polite">Veille : non testée</span></div><script>
+
+/* V4.7: lecteur YouTube de diagnostic visible, 200x200 minimum. */
+#ytTvPanel{display:none;position:fixed;right:12px;bottom:24px;z-index:980;width:210px;padding:5px;border-radius:9px;background:#f6fbff;border:1px solid #7cb0cb;box-shadow:0 2px 12px #163b5c55;color:#173a55;font:11px system-ui,sans-serif}
+#ytTvPanel.active{display:block}
+#ytTvPanel iframe{display:block;width:200px;height:200px;border:0;background:#10212c}
+#ytTvPanel .ytCaption{padding:4px 0 1px}
+.tv-cursor-hidden,.tv-cursor-hidden *{cursor:none!important}
+</style></head><body><div class="shell"><div class="top"><div><div class="brand" id="brand">SynaClock</div><div class="clock" id="clock">--:--</div></div><div class="dates"><div class="hebrew" id="hdate">טוען…</div><div class="civil" id="cdate"></div><div class="event" id="event"></div></div></div><div class="grid"><section class="panel"><div class="label">Programme du jour</div><div id="prayers"></div><div class="nextday"><div class="label">Demain</div><div id="tomorrowPrayers"></div></div></section><section class="panel"><div class="next"><div class="label">Prochain événement</div><div class="next-name" id="nextName">—</div><div class="next-time" id="nextTime"></div><div class="countdown" id="countdown"></div></div></section></div><section class="panel week-panel"><div class="label">Programme de la semaine</div><div class="week-grid" id="weekGrid"></div></section><div class="bottom"><section class="panel"><div class="label">Halakha du jour</div><div class="copy halakha-copy" id="halakha">Aucune halakha programmée.</div><div class="source" id="source"></div></section><section class="panel"><div class="label">Informations</div><div class="copy" id="announcement">Bienvenue.</div></section></div><div class="zmanbar" id="zmanbar"></div></div><video id="keepAwakeVideo" muted loop autoplay playsinline preload="auto" aria-hidden="true" style="position:fixed;right:3px;top:3px;width:96px;height:54px;opacity:.12;z-index:20;pointer-events:none" src="/static/keep-awake.mp4"></video><div class="status" id="status"></div><div class="slide" id="slide"><div id="slideBody"></div></div><div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div><div id="ytTvPanel" aria-label="Test de lecture YouTube"><iframe id="ytTvFrame" title="YouTube : test maintien écran actif" width="200" height="200" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="ytCaption">Test YouTube muet · vérifier la lecture pendant 20 min</div></div><div class="tv-controls" id="tvControls"><button type="button" class="tv-btn" id="tvModeButton" aria-pressed="false">⛶ Activer mode TV</button><span class="tv-indicator" id="tvIndicator" data-kind="warn" role="status" aria-live="polite">Veille : non testée</span></div><script>
 let off=0,data=null,rot=[],ri=0,timer=null,progressRaf=null,mediaRows=[];const $=s=>document.querySelector(s);function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function now(){return new Date(Date.now()+off)}function tick(){let n=now();$('#clock').textContent=n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});if(data?.next_prayer){let[h,m]=data.next_prayer.time.split(':').map(Number),t=new Date(n);t.setHours(h,m,0,0);let d=Math.max(0,t-n),mm=Math.floor(d/60000);$('#countdown').textContent=d?(mm>=60?`dans ${Math.floor(mm/60)}h${String(mm%60).padStart(2,'0')}`:`dans ${mm} min`):''}}setInterval(tick,1000);
 function startProgress(seconds){cancelAnimationFrame(progressRaf);const bar=$('#progressFill');if(!seconds||seconds<=0){bar.style.transition='none';bar.style.width='0%';return}const started=performance.now(),duration=seconds*1000;function step(t){const p=Math.min(1,(t-started)/duration);bar.style.transition='none';bar.style.width=(p*100)+'%';if(p<1)progressRaf=requestAnimationFrame(step)}progressRaf=requestAnimationFrame(step)}
 function scheduleMain(){clearTimeout(timer);$('#slide').classList.remove('on');if(!rot.length){startProgress(0);return}const seconds=data?.main_slide_seconds||30;startProgress(seconds);timer=setTimeout(showNextSlide,seconds*1000)}
@@ -76,8 +83,34 @@ async function tvRequestWakeLock(){
     tvSetIndicator('Anti-veille refusée : '+tvWakeError,'warn');
   }
 }
+
+// V4.7 : YouTube est un TEST : une lecture dans un iframe Silk ne garantit pas
+// de bloquer l'economiseur du Fire TV (contrairement a l'application YouTube).
+const ytTvPanel=document.getElementById('ytTvPanel');
+const ytTvFrame=document.getElementById('ytTvFrame');
+let tvCursorTimer=null;
+function tvResetCursor(){
+  document.documentElement.classList.remove('tv-cursor-hidden');
+  clearTimeout(tvCursorTimer);
+  if(tvModeEnabled)tvCursorTimer=setTimeout(()=>document.documentElement.classList.add('tv-cursor-hidden'),3500);
+}
+['mousemove','pointermove','keydown','touchstart'].forEach(evt=>document.addEventListener(evt,tvResetCursor,{passive:true}));
+function tvStartYoutube(){
+  ytTvPanel.classList.add('active');
+  // Lofi Girl live : lecture muette, pas de son dans la synagogue.
+  // L'iframe reste visible a 200x200 pour respecter les regles du player.
+  const videoId='jfKfPfyJRdk';
+  ytTvFrame.src='https://www.youtube-nocookie.com/embed/'+videoId+'?autoplay=1&mute=1&playsinline=1&controls=1&rel=0';
+}
+function tvStopYoutube(){
+  ytTvFrame.removeAttribute('src');
+  ytTvPanel.classList.remove('active');
+  clearTimeout(tvCursorTimer);
+  document.documentElement.classList.remove('tv-cursor-hidden');
+}
+
 async function tvEnable(){
-  tvModeEnabled=true;tvRefreshButton();
+  tvModeEnabled=true;tvRefreshButton();tvStartYoutube();tvResetCursor();
   // Must run from a real click: no fullscreen request on page load.
   if(document.documentElement.requestFullscreen){
     try{await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){
@@ -87,7 +120,7 @@ async function tvEnable(){
   await tvRequestWakeLock();
 }
 async function tvDisable(){
-  tvModeEnabled=false;tvRefreshButton();
+  tvModeEnabled=false;tvRefreshButton();tvStopYoutube();
   if(tvWakeLock){try{await tvWakeLock.release();}catch(_){}tvWakeLock=null;}
   tvSetIndicator('Mode TV désactivé','warn');
   if(document.fullscreenElement&&document.exitFullscreen){try{await document.exitFullscreen();}catch(_){}}

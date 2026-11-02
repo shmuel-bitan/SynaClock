@@ -1,140 +1,55 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SynaClock</title><style>
-:root{--bg:#eff8fc;--panel:#ffffff;--line:#c9e4f1;--text:#153a58;--muted:#607f92;--gold:#1688c7}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;overflow:hidden}.shell{height:100vh;padding:2vh 3vw;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto auto;gap:1.2vh}.top{display:flex;justify-content:space-between;align-items:flex-start}.brand{font-size:clamp(18px,1.6vw,30px);letter-spacing:.09em;text-transform:uppercase;color:var(--gold)}.clock{font-size:clamp(62px,7.5vw,120px);font-weight:300;letter-spacing:-.055em;line-height:.9}.dates{text-align:right}.hebrew{font-size:clamp(22px,2.3vw,38px);direction:rtl}.civil,.event{color:var(--muted);font-size:clamp(14px,1.2vw,21px);margin-top:7px}.grid{display:grid;grid-template-columns:1.12fr .88fr;gap:1.4vw;min-height:0}.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:2vh 1.8vw}.label{color:var(--gold);font-size:clamp(12px,.95vw,16px);text-transform:uppercase;letter-spacing:.14em;margin-bottom:1.2vh}.prayer{display:grid;grid-template-columns:1fr auto;gap:20px;font-size:clamp(18px,1.75vw,31px);padding:.55vh 0;border-bottom:1px solid var(--line)}.prayer small{grid-column:1/-1;color:var(--muted);font-size:.55em;margin-top:-5px}.next{height:100%;display:grid;place-content:center;text-align:center}.next-name{font-size:clamp(28px,3.2vw,54px)}.next-time{font-size:clamp(42px,4.7vw,74px);color:var(--gold)}.countdown{color:var(--muted);font-size:clamp(15px,1.3vw,23px)}.bottom{display:grid;grid-template-columns:1fr 1fr;gap:1.4vw}.copy{font-size:clamp(15px,1.15vw,20px);line-height:1.42}.source{color:var(--muted);font-size:.82em}.zmanbar{display:flex;justify-content:space-around;gap:12px;border-top:1px solid var(--line);padding-top:1.2vh}.z{text-align:center;min-width:90px}.z b{display:block;color:var(--gold);font-size:clamp(15px,1.25vw,22px)}.z span{font-size:clamp(11px,.9vw,15px);direction:rtl;color:var(--muted)}.status{position:fixed;right:14px;bottom:12px;color:#57798d;font-size:11px;z-index:30}.progress-track{position:fixed;left:0;right:0;bottom:0;height:5px;background:#d7eaf4;z-index:40;overflow:hidden}.progress-fill{height:100%;width:0;background:var(--gold);transition:width linear}.halakha-copy{direction:rtl;text-align:right;unicode-bidi:plaintext}.slide{position:fixed;inset:0;background:var(--bg);display:none;z-index:10;padding:7vh 8vw}.slide.on{display:grid;place-content:center;text-align:center}.slide img.media-photo{max-width:100%;max-height:86vh;object-fit:contain;border-radius:10px}.slide h1{font-size:clamp(48px,6vw,96px);font-weight:400;color:var(--gold);margin:0 0 3vh}.slide p{font-size:clamp(25px,2.7vw,46px);line-height:1.45;white-space:pre-wrap;max-width:1200px;margin:auto}@media(max-width:800px){body{overflow:auto}.shell{height:auto;min-height:100vh}.grid,.bottom{grid-template-columns:1fr}.top{display:block}.dates{text-align:left;margin-top:15px}.zmanbar{flex-wrap:wrap}}
-
-/* CFJT — bleu ciel, blanc, décor tunisien discret */
-.panel{box-shadow:0 5px 22px #5b9cbd14;border-top:3px solid #a9d9ee}
-.brand{font-weight:800;letter-spacing:.055em}
-.brand:before,.brand:after{content:'✦';font-size:.7em;padding:0 12px;color:#86c6e4}
-.week-panel{padding:1.1vh 1.4vw;min-height:0}
-.week-panel .label{margin-bottom:.7vh}
-.week-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.6vw}
-.week-day{border:1px solid var(--line);border-radius:11px;padding:.65vh .6vw;background:#f6fbff;min-width:0}
-.week-day.today{background:#e0f3fc;border-color:#7cc8eb}
-.week-date{font-weight:800;font-size:clamp(12px,1vw,17px);margin-bottom:.4vh}
-.week-event{font-size:clamp(11px,.85vw,15px);line-height:1.3;padding:.2vh 0;overflow-wrap:anywhere}
-.week-event b{color:var(--gold)}
-.week-empty{font-size:clamp(10px,.85vw,14px);color:var(--muted)}
-.nextday{margin-top:1vh;padding-top:.8vh;border-top:1px solid var(--line)}
-.nextday .label{margin-bottom:.5vh}
-.nextday .prayer{font-size:clamp(13px,1vw,19px);padding:.2vh 0}
-@media(max-width:850px){.shell{height:auto;min-height:100vh}.week-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.week-day{padding:10px}.week-event{font-size:13px}}
-@media(min-width:851px) and (max-height:650px){.week-panel{display:none}.clock{font-size:66px}}
-
-/* CFJT : mode TV permanent, diagnostic initial visible */
-.tv-controls{position:fixed;top:12px;right:12px;z-index:1000;display:flex;gap:8px;align-items:center;font:13px system-ui,Arial,sans-serif}
-.tv-btn{background:#137eb2;color:white;border:1px solid #08648e;border-radius:10px;padding:9px 12px;cursor:pointer;font:inherit;box-shadow:0 2px 8px #143a5840}
-.tv-btn:focus-visible{outline:3px solid #f0c65a;outline-offset:2px}
-.tv-indicator{background:#fff;color:#153a58;border:1px solid #8fbfd4;padding:8px 10px;border-radius:10px;max-width:310px;box-shadow:0 2px 8px #143a5825}
-.tv-indicator[data-kind="ok"]{border-color:#2d9667}.tv-indicator[data-kind="warn"]{border-color:#e8a033}
-.tv-controls.tv-running{opacity:.5;transition:opacity .2s}.tv-controls.tv-running:hover,.tv-controls.tv-running:focus-within{opacity:1}
-@media(max-width:650px){.tv-controls{top:5px;right:5px;gap:4px}.tv-btn,.tv-indicator{padding:6px;font-size:11px}}
-
-/* V4.7: lecteur YouTube de diagnostic visible, 200x200 minimum. */
-#ytTvPanel{display:none;position:fixed;right:12px;bottom:24px;z-index:980;width:210px;padding:5px;border-radius:9px;background:#f6fbff;border:1px solid #7cb0cb;box-shadow:0 2px 12px #163b5c55;color:#173a55;font:11px system-ui,sans-serif}
-#ytTvPanel.active{display:block}
-#ytTvPanel iframe{display:block;width:200px;height:200px;border:0;background:#10212c}
-#ytTvPanel .ytCaption{padding:4px 0 1px}
-.tv-cursor-hidden,.tv-cursor-hidden *{cursor:none!important}
-</style></head><body><div class="shell"><div class="top"><div><div class="brand" id="brand">SynaClock</div><div class="clock" id="clock">--:--</div></div><div class="dates"><div class="hebrew" id="hdate">טוען…</div><div class="civil" id="cdate"></div><div class="event" id="event"></div></div></div><div class="grid"><section class="panel"><div class="label">Programme du jour</div><div id="prayers"></div><div class="nextday"><div class="label">Demain</div><div id="tomorrowPrayers"></div></div></section><section class="panel"><div class="next"><div class="label">Prochain événement</div><div class="next-name" id="nextName">—</div><div class="next-time" id="nextTime"></div><div class="countdown" id="countdown"></div></div></section></div><section class="panel week-panel"><div class="label">Programme de la semaine</div><div class="week-grid" id="weekGrid"></div></section><div class="bottom"><section class="panel"><div class="label">Halakha du jour</div><div class="copy halakha-copy" id="halakha">Aucune halakha programmée.</div><div class="source" id="source"></div></section><section class="panel"><div class="label">Informations</div><div class="copy" id="announcement">Bienvenue.</div></section></div><div class="zmanbar" id="zmanbar"></div></div><video id="keepAwakeVideo" muted loop autoplay playsinline preload="auto" aria-hidden="true" style="position:fixed;right:3px;top:3px;width:96px;height:54px;opacity:.12;z-index:20;pointer-events:none" src="/static/keep-awake.mp4"></video><div class="status" id="status"></div><div class="slide" id="slide"><div id="slideBody"></div></div><div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div><div id="ytTvPanel" aria-label="Test de lecture YouTube"><iframe id="ytTvFrame" title="YouTube : test maintien écran actif" width="200" height="200" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="ytCaption">Test YouTube muet · vérifier la lecture pendant 20 min</div></div><div class="tv-controls" id="tvControls"><button type="button" class="tv-btn" id="tvModeButton" aria-pressed="false">⛶ Activer mode TV</button><span class="tv-indicator" id="tvIndicator" data-kind="warn" role="status" aria-live="polite">Veille : non testée</span></div><script>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SynaClock</title><style>:root{--bg:#f4f9fc;--panel:#fff;--line:#d2e1eb;--text:#173a54;--muted:#637d8d;--brand:#0068b0;--brand-deep:#084e79;--gold:#bd8a32;--wash:#e8f3fa}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;overflow:hidden}
+.shell{height:100vh;padding:2vh 3vw;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:1.2vh}
+.top{display:flex;justify-content:space-between;align-items:center}
+.brand-logo{display:block;width:clamp(190px,25vw,330px);height:auto;max-height:9vh;object-fit:contain;object-position:left center}
+.clock{font-size:clamp(72px,8.2vw,132px);font-weight:300;letter-spacing:-.055em;line-height:.9;color:var(--text)}
+.dates{text-align:right}
+.hebrew{font-size:clamp(22px,2.3vw,38px);direction:rtl;color:var(--brand-deep)}
+.civil,.event{color:var(--muted);font-size:clamp(14px,1.2vw,21px);margin-top:7px}
+.grid{display:grid;grid-template-columns:1.12fr .88fr;gap:1.4vw;min-height:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:2vh 1.8vw;box-shadow:0 5px 22px #28546d12}
+.label{color:var(--brand);font-size:clamp(12px,.95vw,16px);font-weight:750;text-transform:uppercase;letter-spacing:.12em;margin-bottom:1.2vh}
+.prayer{display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px;font-size:clamp(20px,2vw,34px);padding:.55vh 0;border-bottom:1px solid var(--line)}
+.prayer strong{font-size:clamp(27px,3vw,48px);color:var(--brand);font-weight:750;white-space:nowrap}
+.prayer small{grid-column:1/-1;color:var(--muted);font-size:.55em;margin-top:-5px}
+.event-panel{display:flex;flex-direction:column;justify-content:space-evenly;min-height:0}
+.next{flex:1;min-height:0;display:grid;align-content:center;justify-items:center;text-align:center}
+.next-name{font-size:clamp(28px,3.2vw,54px)}
+.next-time{font-size:clamp(56px,6vw,96px);font-weight:700;color:var(--brand);line-height:1.05}
+.countdown{color:var(--muted);font-size:clamp(15px,1.3vw,23px)}
+.upcoming{border-top:1px solid var(--line);padding-top:1.2vh;margin-top:1vh}
+.upcoming .label{margin-bottom:.6vh}
+.upcoming-list{display:grid;gap:.3vh}
+.upcoming-event{display:grid;grid-template-columns:5.6em 5.2em minmax(0,1fr);align-items:center;gap:.45em;padding:.35vh 0;border-bottom:1px solid #e8eff4;font-size:clamp(14px,1.15vw,20px)}
+.upcoming-day{color:var(--muted);font-size:.85em}
+.upcoming-time{color:var(--brand);font-size:1.25em;font-weight:800;white-space:nowrap}
+.upcoming-name{overflow-wrap:anywhere}
+.upcoming-empty{color:var(--muted);font-size:clamp(14px,1.1vw,19px)}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:1.4vw}
+.copy{font-size:clamp(15px,1.15vw,20px);line-height:1.42}
+.source{color:var(--muted);font-size:.82em}
+.zmanbar{display:flex;justify-content:space-around;gap:12px;border-top:1px solid var(--line);padding-top:1.2vh}
+.z{text-align:center;min-width:90px}
+.z b{display:block;color:var(--brand);font-size:clamp(17px,1.45vw,25px)}
+.z span{font-size:clamp(11px,.9vw,15px);direction:rtl;color:var(--muted)}
+.status{position:fixed;right:14px;bottom:12px;color:#57798d;font-size:11px;z-index:30}
+.progress-track{position:fixed;left:0;right:0;bottom:0;height:5px;background:#d7eaf4;z-index:40;overflow:hidden}
+.progress-fill{height:100%;width:0;background:var(--gold);transition:width linear}
+.halakha-copy{direction:rtl;text-align:right;unicode-bidi:plaintext}
+.slide{position:fixed;inset:0;background:var(--bg);display:none;z-index:10;padding:7vh 8vw}
+.slide.on{display:grid;place-content:center;text-align:center}
+.slide img.media-photo{max-width:100%;max-height:86vh;object-fit:contain;border-radius:10px}
+.slide h1{font-size:clamp(48px,6vw,96px);font-weight:400;color:var(--brand);margin:0 0 3vh}
+.slide p{font-size:clamp(25px,2.7vw,46px);line-height:1.45;white-space:pre-wrap;max-width:1200px;margin:auto}
+@media(max-width:800px){body{overflow:auto}.shell{height:auto;min-height:100vh}.grid,.bottom{grid-template-columns:1fr}.top{display:block}.brand-logo{width:min(280px,70vw);max-height:none}.dates{text-align:left;margin-top:15px}.event-panel{min-height:380px}.zmanbar{flex-wrap:wrap}.upcoming-event{grid-template-columns:5.5em 4.7em minmax(0,1fr);font-size:15px}}
+@media(min-width:801px) and (max-height:720px){.clock{font-size:clamp(64px,6.8vw,100px)}.panel{padding:1.2vh 1.4vw}.upcoming-event{padding:.15vh 0}}
+</style></head><body><div class="shell"><div class="top"><div><img class="brand-logo" src="/static/cfjt-logo.png" alt="Centre Français du Judaïsme Tunisien"><div class="clock" id="clock">--:--</div></div><div class="dates"><div class="hebrew" id="hdate">טוען…</div><div class="civil" id="cdate"></div><div class="event" id="event"></div></div></div><div class="grid"><section class="panel"><div class="label">Programme du jour</div><div id="prayers"></div></section><section class="panel event-panel"><div class="next"><div class="label">Prochain événement</div><div class="next-name" id="nextName">—</div><div class="next-time" id="nextTime"></div><div class="countdown" id="countdown"></div></div><div class="upcoming"><div class="label">Puis cette semaine</div><div class="upcoming-list" id="upcomingEvents"></div></div></section></div><div class="bottom"><section class="panel"><div class="label">Halakha du jour</div><div class="copy halakha-copy" id="halakha">Aucune halakha programmée.</div><div class="source" id="source"></div></section><section class="panel"><div class="label">Informations</div><div class="copy" id="announcement">Bienvenue.</div></section></div><div class="zmanbar" id="zmanbar"></div></div><div class="status" id="status"></div><div class="slide" id="slide"><div id="slideBody"></div></div><div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div><script>
 let off=0,data=null,rot=[],ri=0,timer=null,progressRaf=null,mediaRows=[];const $=s=>document.querySelector(s);function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function now(){return new Date(Date.now()+off)}function tick(){let n=now();$('#clock').textContent=n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});if(data?.next_prayer){let[h,m]=data.next_prayer.time.split(':').map(Number),t=new Date(n);t.setHours(h,m,0,0);let d=Math.max(0,t-n),mm=Math.floor(d/60000);$('#countdown').textContent=d?(mm>=60?`dans ${Math.floor(mm/60)}h${String(mm%60).padStart(2,'0')}`:`dans ${mm} min`):''}}setInterval(tick,1000);
 function startProgress(seconds){cancelAnimationFrame(progressRaf);const bar=$('#progressFill');if(!seconds||seconds<=0){bar.style.transition='none';bar.style.width='0%';return}const started=performance.now(),duration=seconds*1000;function step(t){const p=Math.min(1,(t-started)/duration);bar.style.transition='none';bar.style.width=(p*100)+'%';if(p<1)progressRaf=requestAnimationFrame(step)}progressRaf=requestAnimationFrame(step)}
 function scheduleMain(){clearTimeout(timer);$('#slide').classList.remove('on');if(!rot.length){startProgress(0);return}const seconds=data?.main_slide_seconds||30;startProgress(seconds);timer=setTimeout(showNextSlide,seconds*1000)}
 function showNextSlide(){clearTimeout(timer);if(!rot.length){scheduleMain();return}let x=rot[ri++%rot.length];$('#slideBody').innerHTML=x.image_url?`<div><img class="media-photo" src="${esc(x.image_url)}" alt="${esc(x.title)}"></div>`:`<h1>${esc(x.title)}</h1><p>${esc(x.content)}</p>`;$('#slide').classList.add('on');const seconds=Math.max(5,Number(x.duration)||12);startProgress(seconds);timer=setTimeout(scheduleMain,seconds*1000)}
-async function refresh(){try{let r=await fetch('/api/dashboard');if(!r.ok)throw Error();data=await r.json();off=new Date(data.server_time)-Date.now();$('#brand').textContent=data.config.synagogue_name||'SynaClock';$('#hdate').textContent=data.hebrew_date.hebrew||'';$('#cdate').textContent=new Date(data.server_time).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});$('#event').textContent=data.calendar_event?.title||'';$('#prayers').innerHTML=data.prayers.length?data.prayers.map(p=>`<div class="prayer"><span>${esc(p.name)}</span><strong>${p.time?esc(p.time):''}</strong>${p.note?`<small>${esc(p.note)}</small>`:''}</div>`).join(''):'<div class="copy">Aucun événement programmé.</div>';const week=data.week_program||[];const dayNames=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-const tomorrow=week[1];$('#tomorrowPrayers').innerHTML=tomorrow?.events?.length?tomorrow.events.slice(0,4).map(e=>`<div class="prayer"><span>${esc(e.name)}</span><strong>${esc(e.time)}</strong></div>`).join(''):'<span class="week-empty">Aucun horaire programmé.</span>';
-$('#weekGrid').innerHTML=week.map((d,i)=>`<div class="week-day ${i===0?'today':''}"><div class="week-date">${dayNames[new Date(d.date+'T12:00:00').getDay()]} ${esc(d.date.slice(8,10))}/${esc(d.date.slice(5,7))}</div>${d.unavailable?'<div class="week-empty">Données indisponibles</div>':d.events.length?d.events.slice(0,4).map(e=>`<div class="week-event"><b>${esc(e.time)}</b> ${esc(e.name)}</div>`).join(''):'<div class="week-empty">Aucun événement</div>'}</div>`).join('');
-$('#nextName').textContent=data.next_prayer?.name||'—';$('#nextTime').textContent=data.next_prayer?.time||'';$('#halakha').textContent=data.halakha?.content||'Aucune halakha programmée.';$('#source').textContent=data.halakha?.source?'Source : '+data.halakha.source:'';let cards=data.announcements.filter(a=>a.display_mode==='card');$('#announcement').innerHTML=cards.length?cards.slice(0,2).map(a=>`<strong>${esc(a.title)}</strong><br>${esc(a.content)}`).join('<br><br>'):'Aucune annonce pour le moment.';$('#zmanbar').innerHTML=data.zmanim_strip.map(z=>`<div class="z"><span>${esc(z.label)}</span><b>${z.time}</b></div>`).join('');$('#status').textContent=data.stale?'Données en cache':'';let nr=[...data.announcements.filter(a=>a.display_mode!=='card'),...mediaRows];if(JSON.stringify(nr.map(x=>[x.id,x.duration,x.image_url,x.title,x.content]))!==JSON.stringify(rot.map(x=>[x.id,x.duration,x.image_url,x.title,x.content]))){rot=nr;ri=0;scheduleMain()}tick()}catch{$('#status').textContent='Mode local — serveur en attente'}}async function refreshMedia(){try{const r=await fetch('/api/media/slides',{cache:'no-store'});if(r.ok){mediaRows=await r.json();await refresh()}}catch{}}
-const keepVideo=$('#keepAwakeVideo');function tryKeepAwake(){if(keepVideo.paused)keepVideo.play().catch(()=>{});}keepVideo.addEventListener('pause',()=>setTimeout(tryKeepAwake,1500));document.addEventListener('click',tryKeepAwake,{once:true});tryKeepAwake();setInterval(tryKeepAwake,30000);
-
-// CFJT Mode TV : activation manuelle, sans simuler de fausse activité utilisateur.
-// L'acceptation du Wake Lock par le navigateur ne garantit PAS la désactivation
-// de l'économiseur Fire TV : vérifier pendant au moins 20 minutes.
-let tvModeEnabled=false, tvWakeLock=null, tvWakeError='';
-const tvButton=document.getElementById('tvModeButton');
-const tvIndicator=document.getElementById('tvIndicator');
-function tvSetIndicator(message,kind='warn'){
-  tvIndicator.textContent=message;tvIndicator.dataset.kind=kind;
-}
-function tvRefreshButton(){
-  tvButton.textContent=tvModeEnabled?'⛶ Quitter mode TV':'⛶ Activer mode TV';
-  tvButton.setAttribute('aria-pressed',String(tvModeEnabled));
-  document.getElementById('tvControls').classList.toggle('tv-running',tvModeEnabled);
-}
-async function tvRequestWakeLock(){
-  if(!tvModeEnabled)return;
-  if(!('wakeLock' in navigator)||typeof navigator.wakeLock.request!=='function'){
-    tvSetIndicator('Anti-veille non compatible avec ce navigateur','warn');return;
-  }
-  if(document.visibilityState!=='visible'){
-    tvSetIndicator('Anti-veille suspendue : onglet masqué','warn');return;
-  }
-  if(tvWakeLock&&!tvWakeLock.released){tvSetIndicator('Verrouillage demandé ✓ (test Fire TV requis)','ok');return;}
-  try{
-    const lock=await navigator.wakeLock.request('screen');
-    if(!tvModeEnabled){await lock.release();return;}
-    tvWakeLock=lock;tvWakeError='';
-    tvSetIndicator('Verrouillage demandé ✓ (test Fire TV requis)','ok');
-    lock.addEventListener('release',()=>{
-      if(tvWakeLock===lock)tvWakeLock=null;
-      if(tvModeEnabled)tvSetIndicator('Verrouillage libéré : tentative à la reprise','warn');
-    });
-  }catch(e){
-    tvWakeError=e?.name||'Erreur';
-    tvSetIndicator('Anti-veille refusée : '+tvWakeError,'warn');
-  }
-}
-
-// V4.7 : YouTube est un TEST : une lecture dans un iframe Silk ne garantit pas
-// de bloquer l'economiseur du Fire TV (contrairement a l'application YouTube).
-const ytTvPanel=document.getElementById('ytTvPanel');
-const ytTvFrame=document.getElementById('ytTvFrame');
-let tvCursorTimer=null;
-function tvResetCursor(){
-  document.documentElement.classList.remove('tv-cursor-hidden');
-  clearTimeout(tvCursorTimer);
-  if(tvModeEnabled)tvCursorTimer=setTimeout(()=>document.documentElement.classList.add('tv-cursor-hidden'),3500);
-}
-['mousemove','pointermove','keydown','touchstart'].forEach(evt=>document.addEventListener(evt,tvResetCursor,{passive:true}));
-function tvStartYoutube(){
-  ytTvPanel.classList.add('active');
-  // Lofi Girl live : lecture muette, pas de son dans la synagogue.
-  // L'iframe reste visible a 200x200 pour respecter les regles du player.
-  const videoId='jfKfPfyJRdk';
-  ytTvFrame.src='https://www.youtube-nocookie.com/embed/'+videoId+'?autoplay=1&mute=1&playsinline=1&controls=1&rel=0';
-}
-function tvStopYoutube(){
-  ytTvFrame.removeAttribute('src');
-  ytTvPanel.classList.remove('active');
-  clearTimeout(tvCursorTimer);
-  document.documentElement.classList.remove('tv-cursor-hidden');
-}
-
-async function tvEnable(){
-  tvModeEnabled=true;tvRefreshButton();tvStartYoutube();tvResetCursor();
-  // Must run from a real click: no fullscreen request on page load.
-  if(document.documentElement.requestFullscreen){
-    try{await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){
-      tvSetIndicator('Plein écran indisponible ; vérification anti-veille…','warn');
-    }
-  }else{tvSetIndicator('Plein écran non compatible ; vérification anti-veille…','warn');}
-  await tvRequestWakeLock();
-}
-async function tvDisable(){
-  tvModeEnabled=false;tvRefreshButton();tvStopYoutube();
-  if(tvWakeLock){try{await tvWakeLock.release();}catch(_){}tvWakeLock=null;}
-  tvSetIndicator('Mode TV désactivé','warn');
-  if(document.fullscreenElement&&document.exitFullscreen){try{await document.exitFullscreen();}catch(_){}}
-}
-tvButton.addEventListener('click',()=>{if(tvModeEnabled)tvDisable();else tvEnable();});
-document.addEventListener('visibilitychange',()=>{
-  if(tvModeEnabled&&document.visibilityState==='visible')tvRequestWakeLock();
-});
-document.addEventListener('fullscreenchange',()=>{
-  if(tvModeEnabled&&!document.fullscreenElement){
-    // The fullscreen state may be revoked externally; keep the wake lock attempt.
-    tvSetIndicator(tvWakeLock?'Plein écran quitté ; verrouillage demandé':'Plein écran quitté ; anti-veille à vérifier','warn');
-  }
-});
-
+async function refresh(){try{let r=await fetch('/api/dashboard');if(!r.ok)throw Error();data=await r.json();off=new Date(data.server_time)-Date.now();$('#hdate').textContent=data.hebrew_date.hebrew||'';$('#cdate').textContent=new Date(data.server_time).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});$('#event').textContent=data.calendar_event?.title||'';$('#prayers').innerHTML=data.prayers.length?data.prayers.map(p=>'<div class="prayer"><span>'+esc(p.name)+'</span><strong>'+(p.time?esc(p.time):'')+'</strong>'+(p.note?'<small>'+esc(p.note)+'</small>':'')+'</div>').join(''):'<div class="copy">Aucun événement programmé.</div>';const week=data.week_program||[],dayNames=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],todayTime=(String(data.server_time||'').match(/T(\d{2}:\d{2})/)||[])[1]||'00:00';let upcoming=[];week.forEach((d,i)=>{const date=new Date(d.date+'T12:00:00'),dayLabel=i===0?'Aujourd’hui':i===1?'Demain':dayNames[date.getDay()]+' '+d.date.slice(8,10)+'/'+d.date.slice(5,7);(d.events||[]).forEach(e=>{if(i>0||!e.time||e.time>todayTime)upcoming.push({day:dayLabel,time:e.time||'',name:e.name||''})})});if(data.next_prayer){const nextIndex=upcoming.findIndex(e=>e.day==='Aujourd’hui'&&e.time===data.next_prayer.time&&e.name===data.next_prayer.name);if(nextIndex>=0)upcoming.splice(nextIndex,1)}$('#upcomingEvents').innerHTML=upcoming.length?upcoming.slice(0,5).map(e=>'<div class="upcoming-event"><span class="upcoming-day">'+esc(e.day)+'</span><strong class="upcoming-time">'+esc(e.time)+'</strong><span class="upcoming-name">'+esc(e.name)+'</span></div>').join(''):'<div class="upcoming-empty">Aucun autre événement programmé cette semaine.</div>';$('#nextName').textContent=data.next_prayer?.name||'—';$('#nextTime').textContent=data.next_prayer?.time||'';$('#halakha').textContent=data.halakha?.content||'Aucune halakha programmée.';$('#source').textContent=data.halakha?.source?'Source : '+data.halakha.source:'';let cards=data.announcements.filter(a=>a.display_mode==='card');$('#announcement').innerHTML=cards.length?cards.slice(0,2).map(a=>'<strong>'+esc(a.title)+'</strong><br>'+esc(a.content)).join('<br><br>'):'Aucune annonce pour le moment.';$('#zmanbar').innerHTML=data.zmanim_strip.map(z=>'<div class="z"><span>'+esc(z.label)+'</span><b>'+z.time+'</b></div>').join('');$('#status').textContent=data.stale?'Données en cache':'';let nr=[...data.announcements.filter(a=>a.display_mode!=='card'),...mediaRows];if(JSON.stringify(nr.map(x=>[x.id,x.duration,x.image_url,x.title,x.content]))!==JSON.stringify(rot.map(x=>[x.id,x.duration,x.image_url,x.title,x.content]))){rot=nr;ri=0;scheduleMain()}tick()}catch{$('#status').textContent='Mode local — serveur en attente'}}async function refreshMedia(){try{const r=await fetch('/api/media/slides',{cache:'no-store'});if(r.ok){mediaRows=await r.json();await refresh()}}catch{}}
 refresh();refreshMedia();setInterval(refresh,10000);setInterval(refreshMedia,60000);
 </script></body></html>

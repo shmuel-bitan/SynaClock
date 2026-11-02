@@ -9,7 +9,7 @@ import os
 import re
 import secrets
 
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -308,6 +308,7 @@ def dashboard():
         "next_prayer": future[0] if future else None, "week_program": week_program, "announcements": anns,
         "halakha": h, "stale": hs or zs or cs,
         "main_slide_seconds": int(setting("main_slide_seconds", "30")),
+        "featured_shabbat_poster_id": setting("shabbat_poster_media_id", ""),
     }
 
 
@@ -552,6 +553,29 @@ def _clean_poster_rows(rows):
     return out
 
 
+class ShabbatPosterSelection(BaseModel):
+    media_id: str = ""
+
+
+@app.get("/api/admin/shabbat-poster")
+def get_shabbat_poster_selection(request: Request):
+    auth(request)
+    return {"media_id": setting("shabbat_poster_media_id", "")}
+
+
+@app.put("/api/admin/shabbat-poster")
+def set_shabbat_poster_selection(body: ShabbatPosterSelection, request: Request):
+    auth(request)
+    _media_origin(request)
+    media_id = body.media_id.strip()
+    if media_id:
+        image = get("media_images", media_id)
+        if not image or image.get("kind") != "shabbat_poster" or not image.get("active", True):
+            raise HTTPException(422, "Choisissez une affiche de Chabbat active")
+    set_setting("shabbat_poster_media_id", media_id)
+    return {"ok": True, "media_id": media_id}
+
+
 @app.post("/api/admin/shabbat-program")
 def save_shabbat_program(body: ShabbatProgramIn, request: Request):
     auth(request)
@@ -597,9 +621,11 @@ def media_admin(request: Request):
 
 
 @app.post("/api/admin/media")
-def media_upload(request: Request, file: UploadFile = File(...)):
+def media_upload(request: Request, file: UploadFile = File(...), kind: str = Form("slide")):
     auth(request)
     _media_origin(request)
+    if kind not in {"slide", "shabbat_poster"}:
+        raise HTTPException(422, "Type d’image invalide")
     if file.content_type not in {"image/jpeg", "image/png", "image/webp"}:
         raise HTTPException(422, "Formats autorisés : JPG, PNG, WEBP")
     payload = file.file.read(5 * 1024 * 1024 + 1)
@@ -618,7 +644,7 @@ def media_upload(request: Request, file: UploadFile = File(...)):
         raise HTTPException(502, "Échec de l'envoi vers Cloudinary") from exc
     row = {"title": (Path(file.filename or "image").stem[:100]),
            "image_url": result["secure_url"], "public_id": result["public_id"],
-           "duration": 12, "sort_order": 0, "active": True,
+           "duration": 12, "sort_order": 0, "active": True, "kind": kind,
            "created_at": datetime.now(timezone.utc).isoformat()}
     try:
         id_ = create("media_images", row)
@@ -643,6 +669,8 @@ def media_update(media_id: str, body: MediaEdit, request: Request):
         raise HTTPException(422, "Titre ou durée invalide (5–120 secondes)")
     if not update("media_images", media_id, body.model_dump()):
         raise HTTPException(404, "Image introuvable")
+    if not body.active and setting("shabbat_poster_media_id", "") == media_id:
+        set_setting("shabbat_poster_media_id", "")
     return {"ok": True}
 
 
@@ -661,4 +689,6 @@ def media_delete(media_id: str, request: Request):
     except Exception as exc:
         raise HTTPException(502, "Impossible de supprimer l'image chez Cloudinary") from exc
     delete("media_images", media_id)
+    if setting("shabbat_poster_media_id", "") == media_id:
+        set_setting("shabbat_poster_media_id", "")
     return {"ok": True}

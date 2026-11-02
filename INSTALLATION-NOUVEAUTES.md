@@ -1,4 +1,4 @@
-# SynaClock : upload d'images, affiches et test de veille
+# SynaClock : images, affiches et affichage Fire TV
 
 ## Configuration gratuite des images
 
@@ -10,7 +10,8 @@
 3. Conserver les variables `FIREBASE_*`, `SYNACLOCK_ADMIN_PASSWORD` et `SYNACLOCK_SESSION_SECRET` existantes.
 4. Envoyer les fichiers de cette archive dans la branche déployée, puis redéployer. Les dépendances `cloudinary` et `python-multipart` sont ajoutées à requirements.txt.
 5. Ouvrir `/admin`, se connecter, puis onglet **Images**. Importer une image JPG/PNG/WEBP de 5 Mo maximum. Modifier la durée (5 à 120 s), l'ordre et l'activation ; cliquer sur Enregistrer.
-6. Sur l'écran `/`, les images apparaîtront en plein écran, entre les passages de l'écran principal, avec les annonces textuelles déjà présentes.
+6. Dans **Affiche Chabbat**, choisir l’affiche qui apparaît à gauche sur l’écran. « Importer l’affiche jointe » ajoute l’exemple fourni ; une image envoyée avec le type « Affiche de Chabbat » est sélectionnée automatiquement.
+7. Les images actives, y compris l’affiche sélectionnée, apparaissent aussi dans la rotation plein écran.
 
 Les fichiers sont chez Cloudinary, les métadonnées dans la collection Firestore `media_images`. Aucun Firebase Storage requis. L'offre gratuite Cloudinary est soumise aux quotas en vigueur.
 
@@ -18,9 +19,9 @@ Les fichiers sont chez Cloudinary, les métadonnées dans la collection Firestor
 
 De petits coins filigranés dorés et des étoiles sont ajoutés directement au dessin canvas : l'aperçu ET le PNG exporté les incluent. La mise en page existante reste inchangée.
 
-## Vidéo anti-veille Fire Stick HD / Amazon Silk
+## Affichage Fire TV
 
-Une vidéo MP4 muette animée de quatre secondes est fournie et jouée en boucle en haut à droite sur `/`. Cette méthode est un **test**, non une garantie contre la veille de Vega OS. Sur le téléviseur, ouvrir `/` avec Amazon Silk, toucher la page si la lecture automatique est bloquée, puis ne rien faire pendant au moins 15 minutes. Vérifier si la veille revient. Le système peut suspendre Silk même lorsque la vidéo tourne.
+La page web ne lance plus de vidéo de diagnostic ni de widget anti-veille. L’affichage sur Fire TV passe par l’application Vega, qui ouvre le site en plein écran. Le projet Vega et son lecteur audio natif sont maintenus séparément du dépôt web. Après un redémarrage du Stick, l’application doit être relancée manuellement.
 
 ## Limitations / sécurité
 

@@ -36,7 +36,7 @@ Puis ouvrir :
 
 Ne jamais committer `s.json`, un compte de service Firebase, `.env` ou `config.json`.
 
-Les images d’annonces ont volontairement été supprimées de cette version : les annonces sont soit des cartes, soit des slides texte. Le générateur d’affiche Chabbat reste local dans le navigateur et exporte son PNG sans stockage cloud.
+Les annonces peuvent être affichées en cartes ou en slides texte et image. Les images sont administrées depuis l’interface et stockées sur Cloudinary ; leurs métadonnées sont conservées dans Firestore. Le générateur d’affiche Chabbat reste local dans le navigateur et exporte son PNG.
 
 ## Mise à niveau depuis la V4
 

@@ -70,10 +70,10 @@ function layoutProgram(ctx,rows,top,bottom,friday){for(let size=33;size>=20;size
 function drawPosterOrnaments(ctx){
  ctx.save();ctx.strokeStyle='#b58a36';ctx.fillStyle='#b58a36';ctx.globalAlpha=.78;ctx.lineWidth=2.5;
  const star=(cx,cy,r)=>{ctx.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4;const x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fill()};
- for(const [x,y,sx,sy] of [[46,47,1,1],[977,47,-1,1],[46,1489,1,-1],[977,1489,-1,-1]]){
+ for(const [x,y,sx,sy] of [[46,47,1,1],[977,47,-1,1]]){
   ctx.save();ctx.translate(x,y);ctx.scale(sx,sy);ctx.beginPath();ctx.moveTo(0,56);ctx.quadraticCurveTo(0,0,56,0);ctx.stroke();ctx.beginPath();ctx.moveTo(14,46);ctx.quadraticCurveTo(14,14,46,14);ctx.stroke();ctx.restore();
  }
- star(512,40,10);star(512,1500,10);ctx.restore();
+ star(512,40,10);ctx.restore();
 }
 async function drawPosterCanvas(){const img=await getPosterAssets(),p=posterFormData();const canvas=document.createElement('canvas');canvas.width=POSTER_W;canvas.height=POSTER_H;const x=canvas.getContext('2d');x.drawImage(img,0,0,POSTER_W,POSTER_H);drawPosterOrnaments(x);
 const titleLines=p.brand.split('\n');if(titleLines.length===2){textBox(x,titleLines[0],[225,90,800,153],66,{style:'bold'});textBox(x,titleLines[1],[235,165,785,228],65,{style:'bold'})}else multiBox(x,p.brand,[225,90,780,228],65,{style:'bold'});

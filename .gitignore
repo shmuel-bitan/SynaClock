@@ -17,3 +17,5 @@ firebase-key*.json
 config.json
 
 s.json
+.vercel
+.env*

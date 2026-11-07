@@ -41,8 +41,11 @@ uvicorn app.main:app --reload
 
 ## Déploiement Vercel
 
-Le fichier `app/main.py` expose directement une instance FastAPI nommée `app`, format reconnu par Vercel.
-Après le push GitHub, importer le dépôt dans Vercel, renseigner les variables d'environnement et déployer.
+Vercel utilise `api/index.py` comme fonction Python. Le rewrite de `vercel.json`
+transmet le chemin public (`/`, `/admin`, `/static/...` et `/api/...`) à cette
+fonction, qui le restaure avant de l'envoyer à FastAPI.
+Après le push GitHub, importer le dépôt dans Vercel, renseigner les variables
+d'environnement et déployer.
 
 ## Ancienne base SQLite
 

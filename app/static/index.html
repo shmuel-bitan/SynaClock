@@ -6,6 +6,8 @@ body{margin:0;background:linear-gradient(rgba(244,249,252,.38),rgba(244,249,252,
 .brand-logo{display:block;width:clamp(190px,25vw,330px);height:auto;max-height:9vh;object-fit:contain;object-position:left center}
 .clock{justify-self:center;text-align:center;font-size:clamp(72px,8.2vw,132px);font-weight:300;letter-spacing:-.055em;line-height:.9;color:var(--text)}
 .dates{justify-self:end;text-align:right}.panel-dates{justify-self:stretch;text-align:center;border-bottom:1px solid var(--line);padding-bottom:1vh;margin-bottom:.5vh}.panel-dates .hebrew{font-size:clamp(22px,2vw,34px)}
+.mevarhim{display:none;margin:.9vh auto 0;padding:.8vh 1vw;max-width:95%;border:1px solid rgba(189,138,50,.55);border-radius:12px;background:linear-gradient(110deg,#fffdf7ee,#edf7fcee);box-shadow:0 3px 12px #28546d12;text-align:center}
+.mevarhim.on{display:block}.mevarhim-title{font-size:clamp(16px,1.35vw,22px);font-weight:800;color:var(--brand-deep)}.mevarhim-copy{margin-top:3px;font-size:clamp(12px,.9vw,15px);color:var(--muted)}
 .hebrew{font-size:clamp(22px,2.3vw,38px);direction:rtl;color:var(--brand-deep)}
 .civil,.event{color:var(--muted);font-size:clamp(14px,1.2vw,21px);margin-top:7px}
 .grid{display:grid;grid-template-columns:1.12fr .88fr;gap:1.4vw;min-height:0}
@@ -34,18 +36,112 @@ body{margin:0;background:linear-gradient(rgba(244,249,252,.38),rgba(244,249,252,
 .progress-track{position:fixed;left:0;right:0;bottom:0;height:5px;background:#d7eaf4;z-index:40;overflow:hidden}
 .progress-fill{height:100%;width:0;background:var(--gold);transition:width linear}
 .halakha-copy{direction:rtl;text-align:right;unicode-bidi:plaintext}
-.slide{position:fixed;inset:0;background:var(--bg);display:none;z-index:10;padding:7vh 8vw}
+.slide{position:fixed;inset:0;background:linear-gradient(rgba(244,249,252,.38),rgba(244,249,252,.38)),url("/static/cfjt-background.jpg") center/cover fixed;display:none;z-index:10;padding:7vh 8vw}
 .slide.on{display:grid;place-content:center;text-align:center}
-.slide img.media-photo{max-width:100%;max-height:86vh;object-fit:contain;border-radius:10px}
+.slide img.media-photo{max-width:88vw;max-height:76vh;object-fit:contain;border-radius:10px;box-shadow:0 8px 28px #173a5440}
 .slide h1{font-size:clamp(48px,6vw,96px);font-weight:400;color:var(--brand);margin:0 0 3vh}
 .slide p{font-size:clamp(25px,2.7vw,46px);line-height:1.45;white-space:pre-wrap;max-width:1200px;margin:auto}
 @media(max-width:800px){body{overflow:auto}.shell{height:auto;min-height:100vh}.grid{grid-template-columns:1fr}.top{grid-template-columns:1fr 1fr;row-gap:10px}.brand-area{padding:6px 10px}.brand-area{grid-column:1;grid-row:1}.brand-logo{width:min(220px,48vw);max-height:none}.clock{grid-column:1/-1;grid-row:2;font-size:clamp(64px,15vw,96px);margin:6px 0;text-align:center}.event-panel{min-height:380px}.halakha-panel{max-height:none}.poster-display{height:72vh}.poster-display img{height:100%;max-height:100%}.zmanbar{flex-wrap:wrap}.upcoming-event{grid-template-columns:5.5em 4.7em minmax(0,1fr);font-size:15px}}
 @media(min-width:801px) and (max-height:720px){.clock{font-size:clamp(64px,6.8vw,100px)}.panel{padding:1.2vh 1.4vw}.upcoming-event{padding:.15vh 0}}
-</style></head><body><div class="shell"><div class="top"><div class="brand-area"><img class="brand-logo" src="/static/cfjt-logo.png" alt="Centre Français du Judaïsme Tunisien"></div><div class="clock" id="clock">--:--</div></div><div class="grid"><section class="panel poster-panel"><div class="poster-display"><div id="posterEmpty" class="poster-empty">Affiche de Chabbat à sélectionner dans l’administration.</div><img id="shabbatPosterImage" alt="Affiche de Chabbat sélectionnée" hidden></div></section><div class="right-stack"><section class="panel event-panel"><div class="dates panel-dates"><div class="hebrew" id="hdate">טוען…</div><div class="civil" id="cdate"></div><div class="event" id="event"></div></div><div class="next" id="nextBlock" hidden><div class="label">Prochain événement</div><div class="next-name" id="nextName"></div><div class="next-time" id="nextTime"></div><div class="countdown" id="countdown"></div></div><div class="upcoming"><div class="label">Événements à venir cette semaine</div><div class="upcoming-list" id="upcomingEvents"></div></div></section><section class="panel halakha-panel"><div class="label">Halakha du jour</div><div class="copy halakha-copy" id="halakha">Aucune halakha programmée.</div><div class="source" id="source"></div></section></div></div><div class="zmanbar" id="zmanbar"></div></div><div class="status" id="status"></div><div class="slide" id="slide"><div id="slideBody"></div></div><div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div><script>
-let off=0,data=null,rot=[],ri=0,timer=null,progressRaf=null,mediaRows=[];const $=s=>document.querySelector(s);function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function now(){return new Date(Date.now()+off)}function tick(){let n=now();$('#clock').textContent=n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});if(data?.next_prayer){let[h,m]=data.next_prayer.time.split(':').map(Number),t=new Date(n);t.setHours(h,m,0,0);let d=Math.max(0,t-n),mm=Math.floor(d/60000);$('#countdown').textContent=d?(mm>=60?`dans ${Math.floor(mm/60)}h${String(mm%60).padStart(2,'0')}`:`dans ${mm} min`):''}}setInterval(tick,1000);
+</style></head><body><div class="shell"><div class="top"><div class="brand-area"><img class="brand-logo" src="/static/cfjt-logo.png" alt="Centre Français du Judaïsme Tunisien"></div><div class="clock" id="clock">--:--</div></div><div class="grid"><section class="panel poster-panel"><div class="poster-display"><div id="posterEmpty" class="poster-empty">Affiche de Chabbat à sélectionner dans l’administration.</div><img id="shabbatPosterImage" alt="Affiche de Chabbat sélectionnée" hidden></div></section><div class="right-stack"><section class="panel event-panel"><div class="dates panel-dates"><div class="hebrew" id="hdate">טוען…</div><div class="civil" id="cdate"></div><div class="event" id="event"></div><div class="mevarhim" id="mevarhim"><div class="mevarhim-title">שבת מברכים · Chabbat Mevarhim</div><div class="mevarhim-copy" id="mevarhimCopy">Nous bénissons le nouveau mois à venir.</div></div></div><div class="next" id="nextBlock" hidden><div class="label">Prochain événement</div><div class="next-name" id="nextName"></div><div class="next-time" id="nextTime"></div><div class="countdown" id="countdown"></div></div><div class="upcoming"><div class="label">Événements à venir cette semaine</div><div class="upcoming-list" id="upcomingEvents"></div></div></section><section class="panel halakha-panel"><div class="label">Halakha du jour</div><div class="copy halakha-copy" id="halakha">Aucune halakha programmée.</div><div class="source" id="source"></div></section></div></div><div class="zmanbar" id="zmanbar"></div></div><div class="status" id="status"></div><div class="slide" id="slide"><div id="slideBody"></div></div><div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div><script>
+let off=0,data=null,rot=[],ri=0,timer=null,progressRaf=null,mediaRows=[],activeNext=null,warmedMediaImages=[];
+const $=s=>document.querySelector(s);
+const DASH_CACHE_KEY='synaclock-dashboard-cache-v1',MEDIA_CACHE_KEY='synaclock-media-cache-v1',SYNAGOGUE_TIME_ZONE='Europe/Paris';
+function readLocalCache(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
+function writeLocalCache(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch{}}
+const savedDashboard=readLocalCache(DASH_CACHE_KEY),savedMedia=readLocalCache(MEDIA_CACHE_KEY);
+if(savedDashboard?.data){data=savedDashboard.data;off=Number(savedDashboard.offset)||0}
+if(Array.isArray(savedMedia))mediaRows=savedMedia;
+function zonedDateTime(isoDate,hour,minute,second=0){
+ const [year,month,day]=isoDate.split('-').map(Number),target=Date.UTC(year,month-1,day,Number(hour),Number(minute),Number(second));let guess=target;
+ const fmt=new Intl.DateTimeFormat('en-GB',{timeZone:SYNAGOGUE_TIME_ZONE,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+ for(let i=0;i<4;i++){const p=Object.fromEntries(fmt.formatToParts(new Date(guess)).map(x=>[x.type,x.value]));const shown=Date.UTC(Number(p.year),Number(p.month)-1,Number(p.day),Number(p.hour),Number(p.minute),Number(p.second));const delta=target-shown;if(!delta)break;guess+=delta}
+ return new Date(guess)
+}
+function parseServerTime(value){const raw=String(value||'');if(/(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw))return new Date(raw);const m=raw.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);return m?zonedDateTime(`${m[1]}-${m[2]}-${m[3]}`,m[4],m[5],m[6]||0):new Date(raw)}
+function dateKeyInZone(date){const p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:SYNAGOGUE_TIME_ZONE,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date).map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}`}
+function shiftIsoDate(iso,days){const [y,m,d]=iso.split('-').map(Number),x=new Date(Date.UTC(y,m-1,d+days));return `${x.getUTCFullYear()}-${String(x.getUTCMonth()+1).padStart(2,'0')}-${String(x.getUTCDate()).padStart(2,'0')}`}
+function preloadMediaImages(rows){
+ warmedMediaImages=[];
+ for(const row of rows||[]){if(!row?.image_url)continue;const img=new Image();img.decoding='async';img.src=row.image_url;warmedMediaImages.push(img)}
+}
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function now(){return new Date(Date.now()+off)}
+function hebrewParts(date,locale='en-u-ca-hebrew'){const parts=new Intl.DateTimeFormat(locale,{timeZone:SYNAGOGUE_TIME_ZONE,day:'numeric',month:'long',weekday:'short'}).formatToParts(date);return Object.fromEntries(parts.map(x=>[x.type,x.value]))}
+const monthFr={'Tishri':'Tichri','Heshvan':'Hechvan','Kislev':'Kislev','Tevet':'Tevet','Shevat':'Chevat','Adar I':'Adar I','Adar II':'Adar II','Adar':'Adar','Nisan':'Nissan','Iyar':'Iyar','Sivan':'Sivan','Tamuz':'Tamouz','Av':'Av','Elul':'Eloul'};
+function mevarhimFor(date){
+ const day=hebrewParts(date);
+ if(new Intl.DateTimeFormat('en-US',{timeZone:SYNAGOGUE_TIME_ZONE,weekday:'short'}).format(date)!=='Sat')return null;
+ const baseDate=dateKeyInZone(date);
+ for(let delta=1;delta<=7;delta++){
+  const future=zonedDateTime(shiftIsoDate(baseDate,delta),12,0);
+  const hp=hebrewParts(future);
+  if(Number(hp.day)===1){
+   const month=hp.month||'';
+   if(/^(Av|Tishri)$/i.test(month))return null;
+   return monthFr[month]||month;
+  }
+ }
+ return null;
+}
+function nextFromWeek(){
+ if(!Array.isArray(data?.week_program))return null;
+ const current=now();let candidates=[];
+ for(const day of data.week_program){
+  if(!day?.date||!Array.isArray(day.events))continue;
+  for(const e of day.events){
+   const m=String(e?.time||'').match(/^(\d{1,2}):(\d{2})/);if(!m)continue;
+   const at=zonedDateTime(day.date,m[1],m[2]);
+   if(Number.isFinite(at.getTime())&&at>current)candidates.push({name:e.name||'',time:`${m[1].padStart(2,'0')}:${m[2]}`,at});
+  }
+ }
+ candidates.sort((a,b)=>a.at-b.at);return candidates[0]||null;
+}
+function tick(){
+ const n=now();$('#clock').textContent=new Intl.DateTimeFormat('fr-FR',{timeZone:SYNAGOGUE_TIME_ZONE,hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(n);$('#hdate').textContent=new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{timeZone:SYNAGOGUE_TIME_ZONE,day:'numeric',month:'long',year:'numeric'}).format(n);
+ if(activeNext){const d=Math.max(0,activeNext.at-n),mm=Math.floor(d/60000);$('#countdown').textContent=d?(mm>=60?`dans ${Math.floor(mm/60)}h${String(mm%60).padStart(2,'0')}`:`dans ${mm} min`):''}
+}
+setInterval(tick,1000);
 function startProgress(seconds){cancelAnimationFrame(progressRaf);const bar=$('#progressFill');if(!seconds||seconds<=0){bar.style.transition='none';bar.style.width='0%';return}const started=performance.now(),duration=seconds*1000;function step(t){const p=Math.min(1,(t-started)/duration);bar.style.transition='none';bar.style.width=(p*100)+'%';if(p<1)progressRaf=requestAnimationFrame(step)}progressRaf=requestAnimationFrame(step)}
 function scheduleMain(){clearTimeout(timer);$('#slide').classList.remove('on');if(!rot.length){startProgress(0);return}const seconds=data?.main_slide_seconds||30;startProgress(seconds);timer=setTimeout(showNextSlide,seconds*1000)}
 function showNextSlide(){clearTimeout(timer);if(!rot.length){scheduleMain();return}let x=rot[ri++%rot.length];$('#slideBody').innerHTML=x.image_url?`<div><img class="media-photo" src="${esc(x.image_url)}" alt="${esc(x.title)}"></div>`:`<h1>${esc(x.title)}</h1><p>${esc(x.content)}</p>`;$('#slide').classList.add('on');const seconds=Math.max(5,Number(x.duration)||12);startProgress(seconds);timer=setTimeout(scheduleMain,seconds*1000)}
-async function refresh(){try{let r=await fetch('/api/dashboard');if(!r.ok)throw Error();data=await r.json();off=new Date(data.server_time)-Date.now();$('#hdate').textContent=data.hebrew_date.hebrew||'';$('#cdate').textContent=new Date(data.server_time).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});$('#event').textContent=data.calendar_event?.title||'';const selectedPoster=mediaRows.find(x=>String(x.id)===String(data.featured_shabbat_poster_id)),posterImage=$('#shabbatPosterImage'),posterEmpty=$('#posterEmpty');if(selectedPoster){if(posterImage.dataset.mediaId!==String(selectedPoster.id)){posterImage.src=selectedPoster.image_url;posterImage.dataset.mediaId=String(selectedPoster.id)}posterImage.hidden=false;posterEmpty.hidden=true}else{posterImage.hidden=true;posterImage.removeAttribute('src');delete posterImage.dataset.mediaId;posterEmpty.hidden=false}const week=data.week_program||[],dayNames=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],todayTime=(String(data.server_time||'').match(/T(\d{2}:\d{2})/)||[])[1]||'00:00';let upcoming=[];week.forEach((d,i)=>{const date=new Date(d.date+'T12:00:00'),dayLabel=i===0?'Aujourd’hui':i===1?'Demain':dayNames[date.getDay()]+' '+d.date.slice(8,10)+'/'+d.date.slice(5,7);(d.events||[]).forEach(e=>{if(i>0||!e.time||e.time>todayTime)upcoming.push({day:dayLabel,time:e.time||'',name:e.name||''})})});$('#upcomingEvents').innerHTML=upcoming.length?upcoming.slice(0,8).map(e=>'<div class="upcoming-event"><span class="upcoming-day">'+esc(e.day)+'</span><strong class="upcoming-time">'+esc(e.time)+'</strong><span class="upcoming-name">'+esc(e.name)+'</span></div>').join(''):'<div class="upcoming-empty">Aucun autre événement programmé cette semaine.</div>';$('#nextBlock').hidden=!data.next_prayer;$('#nextName').textContent=data.next_prayer?.name||'';$('#nextTime').textContent=data.next_prayer?.time||'';$('#halakha').textContent=data.halakha?.content||'Aucune halakha programmée.';$('#source').textContent=data.halakha?.source?'Source : '+data.halakha.source:'';$('#zmanbar').innerHTML=data.zmanim_strip.map(z=>'<div class="z"><span>'+esc(z.label)+'</span><b>'+z.time+'</b></div>').join('');$('#status').textContent=data.stale?'Données en cache':'';let nr=[...data.announcements.filter(a=>a.display_mode!=='card'),...mediaRows];if(JSON.stringify(nr.map(x=>[x.id,x.duration,x.image_url,x.title,x.content]))!==JSON.stringify(rot.map(x=>[x.id,x.duration,x.image_url,x.title,x.content]))){rot=nr;ri=0;scheduleMain()}tick()}catch{$('#status').textContent='Mode local — serveur en attente'}}async function refreshMedia(){try{const r=await fetch('/api/media/slides',{cache:'no-store'});if(r.ok){mediaRows=await r.json();await refresh()}}catch{}}
-refresh();refreshMedia();setInterval(refresh,10000);setInterval(refreshMedia,60000);
+async function refresh(){
+ let fresh=false;
+ try{
+  const r=await fetch('/api/dashboard',{cache:'no-store'});if(!r.ok)throw Error();
+  data=await r.json();off=parseServerTime(data.server_time)-Date.now();
+  writeLocalCache(DASH_CACHE_KEY,{data,offset:off,savedAt:Date.now()});fresh=true;
+ }catch{}
+ if(!data){$('#status').textContent='Aucune donnée récente disponible';return}
+ renderDashboard();
+ if(!fresh)$('#status').textContent='Dernières données enregistrées — serveur indisponible';
+}
+function renderDashboard(){
+ const serverDate=now(),dateForHebrew=new Date(serverDate);
+ $('#hdate').textContent=new Intl.DateTimeFormat('he-IL-u-ca-hebrew',{timeZone:SYNAGOGUE_TIME_ZONE,day:'numeric',month:'long',year:'numeric'}).format(serverDate);$('#cdate').textContent=new Intl.DateTimeFormat('fr-FR',{timeZone:SYNAGOGUE_TIME_ZONE,weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(serverDate);$('#event').textContent=data.calendar_event?.title||'';
+ const targetMonth=mevarhimFor(dateForHebrew),mevarhim=$('#mevarhim');mevarhim.classList.toggle('on',Boolean(targetMonth));$('#mevarhimCopy').textContent=targetMonth?`Nous bénissons le mois de ${targetMonth}, qui approche.`:'Nous bénissons le nouveau mois à venir.';
+ const selectedPoster=mediaRows.find(x=>String(x.id)===String(data.featured_shabbat_poster_id)),posterImage=$('#shabbatPosterImage'),posterEmpty=$('#posterEmpty');if(selectedPoster){if(posterImage.dataset.mediaId!==String(selectedPoster.id)){posterImage.src=selectedPoster.image_url;posterImage.dataset.mediaId=String(selectedPoster.id)}posterImage.hidden=false;posterEmpty.hidden=true}else{posterImage.hidden=true;posterImage.removeAttribute('src');delete posterImage.dataset.mediaId;posterEmpty.hidden=false}
+ const week=data.week_program||[],dayNames=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],todayTime=new Intl.DateTimeFormat('fr-FR',{timeZone:SYNAGOGUE_TIME_ZONE,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(serverDate);let upcoming=[];
+ week.forEach((d,i)=>{const date=new Date(d.date+'T12:00:00'),dayLabel=i===0?'Aujourd’hui':i===1?'Demain':dayNames[date.getDay()]+' '+d.date.slice(8,10)+'/'+d.date.slice(5,7);(d.events||[]).forEach(e=>{if(i>0||!e.time||e.time>todayTime)upcoming.push({day:dayLabel,time:e.time||'',name:e.name||''})})});
+ $('#upcomingEvents').innerHTML=upcoming.length?upcoming.slice(0,8).map(e=>'<div class="upcoming-event"><span class="upcoming-day">'+esc(e.day)+'</span><strong class="upcoming-time">'+esc(e.time)+'</strong><span class="upcoming-name">'+esc(e.name)+'</span></div>').join(''):'<div class="upcoming-empty">Aucun autre événement programmé cette semaine.</div>';
+ activeNext=nextFromWeek()|| (data.next_prayer?{name:data.next_prayer.name||'',time:data.next_prayer.time||'',at:(()=>{const [h,m]=String(data.next_prayer.time||'00:00').split(':').map(Number);let t=zonedDateTime(dateKeyInZone(serverDate),h,m);if(t<=serverDate)t=zonedDateTime(shiftIsoDate(dateKeyInZone(serverDate),1),h,m);return t})()}:null);
+ $('#nextBlock').hidden=!activeNext;$('#nextName').textContent=activeNext?.name||'';$('#nextTime').textContent=activeNext?.time||'';
+ $('#halakha').textContent=data.halakha?.content||'Aucune halakha programmée.';$('#source').textContent=data.halakha?.source?'Source : '+data.halakha.source:'';$('#zmanbar').innerHTML=(data.zmanim_strip||[]).map(z=>'<div class="z"><span>'+esc(z.label)+'</span><b>'+esc(z.time)+'</b></div>').join('');$('#status').textContent=data.stale?'Données en cache':'';
+ let nr=[...(data.announcements||[]).filter(a=>a.display_mode!=='card'),...mediaRows];if(JSON.stringify(nr.map(x=>[x.id,x.duration,x.image_url,x.title,x.content]))!==JSON.stringify(rot.map(x=>[x.id,x.duration,x.image_url,x.title,x.content]))){rot=nr;ri=0;scheduleMain()}tick()
+}
+async function refreshMedia(){
+ try{
+  const r=await fetch('/api/media/slides',{cache:'no-store'});if(!r.ok)throw Error();
+  const rows=await r.json();if(!Array.isArray(rows))throw Error();
+  mediaRows=rows;writeLocalCache(MEDIA_CACHE_KEY,mediaRows);preloadMediaImages(mediaRows);
+ }catch{if(!mediaRows.length){const cached=readLocalCache(MEDIA_CACHE_KEY);if(Array.isArray(cached))mediaRows=cached}}
+}
+async function refreshAll(){await refreshMedia();await refresh()}
+async function initialLoad(){
+ if(mediaRows.length)preloadMediaImages(mediaRows);
+ if(data)renderDashboard();
+ await refreshAll();
+}
+initialLoad();
+setInterval(refreshAll,6*60*60*1000);
 </script></body></html>
